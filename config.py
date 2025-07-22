@@ -1,6 +1,6 @@
 # config.py
 class Config:
-    STEAM_API_KEY = "REDACTED_ROTATE_ME"
+    STEAM_API_KEY = ""
     
     STEAM_API_BASE = "https://api.steampowered.com"
     
