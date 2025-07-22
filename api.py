@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
 from config import Config
+import requests
 
 load_dotenv()
 
@@ -14,17 +15,32 @@ STEAM_API_KEY = os.getenv('STEAM_API_KEY')
 
 @app.route('/')
 def home():
-    """Home endpoint - welcome message"""
-    return jsonify({
-        "message": "Welcome to Steam API Wrapper",
-        "note": "Make sure to set your Steam API key in config.py",
-        "endpoints": {
-            "get_user_info": "/user/<steam_id>",
-            "get_user_games": "/user/<steam_id>/games",
-            "get_game_details": "/game/<app_id>",
-            "search_games": "/search/games?q=<query>"
-        }
-    })
+    return "Welcome to Steam API Wrapper"
+
+@app.route('/getAppNews')
+def getNewsForApp():
+    appId = request.args.get('appId')
+    count = request.args.get('count')
+    maxLength = request.args.get('maxLength')
+    format = request.args.get('format')
+    params = {
+        'appId': appId,
+        'count': count,
+        'maxLength': maxLength,
+        'format': format
+    }
+
+    if not appId:
+        return jsonify({'400 Bad Request': 'App ID is required'}), 400
+
+    url = f"{STEAM_API_BASE}/ISteamNews/GetNewsForApp/v0002/"
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        return jsonify(response.json())
+    except requests.exceptions.RequestException as e:
+        return jsonify({'An Internal Server Error has occurred': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=Config.DEBUG, port=Config.PORT)
